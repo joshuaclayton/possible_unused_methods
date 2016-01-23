@@ -1,9 +1,10 @@
 defmodule PossibleUnusedMethods do
   alias PossibleUnusedMethods.ParallelMap
+  alias PossibleUnusedMethods.TagsParser
 
   def main(_args) do
     File.read!("#{File.cwd!}/.git/tags")
-    |> PossibleUnusedMethods.TagsParser.parse
+    |> TagsParser.parse
     |> generate_terms_with_occurrences
     |> find_occurrences_in_only_one_file
     |> find_occurrences_on_only_one_line
@@ -53,24 +54,6 @@ defmodule PossibleUnusedMethods do
         false -> acc
       end
     end)
-  end
-end
-
-defmodule PossibleUnusedMethods.TagsParser do
-  def parse(lines) do
-    lines
-    |> String.split("\n")
-    |> Enum.reduce([], fn(line, acc) ->
-      line
-      |> String.split("\t")
-      |> Enum.at(0)
-      |> add_to(acc)
-    end)
-    |> Enum.uniq
-  end
-
-  defp add_to(term, acc) do
-    acc ++ [term]
   end
 end
 
