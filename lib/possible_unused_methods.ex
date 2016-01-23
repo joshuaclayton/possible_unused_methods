@@ -1,6 +1,7 @@
 defmodule PossibleUnusedMethods do
   alias PossibleUnusedMethods.ParallelMap
   alias PossibleUnusedMethods.TagsParser
+  alias PossibleUnusedMethods.TokenLocator
 
   def main(_args) do
     File.read!("#{File.cwd!}/.git/tags")
@@ -16,7 +17,7 @@ defmodule PossibleUnusedMethods do
 
   defp generate_terms_with_occurrences(tags_list) do
     tags_list
-    |> ParallelMap.map(&PossibleUnusedMethods.Parser.run/1, &Map.merge/2)
+    |> ParallelMap.map(&TokenLocator.run/1, &Map.merge/2)
   end
 
   defp find_occurrences_in_only_one_file(terms_and_occurrences) do
@@ -53,41 +54,6 @@ defmodule PossibleUnusedMethods do
         true -> put_in acc, [key], value
         false -> acc
       end
-    end)
-  end
-end
-
-defmodule PossibleUnusedMethods.Parser do
-  def run(items) do
-    items
-    |> Enum.reject(fn(item) -> item == "" end)
-    |> build_matches
-  end
-
-  defp build_matches(items) do
-    items
-    |> Enum.reduce(%{}, fn(item, acc) ->
-      put_in acc, [item], matches_for(item)
-    end)
-  end
-
-
-  defp matches_for(item) do
-    :os.cmd('ag "#{item}" -c -Q')
-    |> to_string
-    |> String.strip
-    |> String.split("\n")
-    |> Enum.reject(fn(item) -> item == "" end)
-    |> matches_to_map
-  end
-
-  defp matches_to_map(matches) do
-    matches
-    |> Enum.reduce(%{}, fn(item, acc) ->
-      IO.puts item
-      [line | count] = item |> String.split(":")
-
-      put_in(acc, [line], count |> Enum.at(0) |> String.to_integer)
     end)
   end
 end
