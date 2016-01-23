@@ -1,4 +1,6 @@
 defmodule PossibleUnusedMethods do
+  alias PossibleUnusedMethods.ParallelMap
+
   def main(_args) do
     File.read!("#{File.cwd!}/.git/tags")
     |> PossibleUnusedMethods.TagsParser.parse
@@ -13,7 +15,7 @@ defmodule PossibleUnusedMethods do
 
   defp generate_terms_with_occurrences(tags_list) do
     tags_list
-    |> Peach.handle(&PossibleUnusedMethods.Parser.run/1, &Map.merge/2)
+    |> ParallelMap.map(&PossibleUnusedMethods.Parser.run/1, &Map.merge/2)
   end
 
   defp find_occurrences_in_only_one_file(terms_and_occurrences) do
@@ -51,36 +53,6 @@ defmodule PossibleUnusedMethods do
         false -> acc
       end
     end)
-  end
-end
-
-defmodule Peach do
-  def handle(list, function, merge_function) do
-    lists = list |> Enum.chunk(div(list |> length, 16))
-
-    current = self()
-
-    lists
-    |> Enum.map(fn(list) ->
-      spawn_link Peach, :wrapper, [current, list, function]
-    end)
-
-    receive_loop([], lists |> length, merge_function)
-  end
-
-  def wrapper(pid, list, function) do
-    send(pid, {:ok, function.(list)})
-  end
-
-  defp receive_loop(data, remaining_completes, merge_function) when remaining_completes > 0 do
-    receive do
-      {:ok, datum} ->
-        receive_loop(data ++ [datum], remaining_completes - 1, merge_function)
-    end
-  end
-
-  defp receive_loop(data, 0, merge_function) do
-    data |> Enum.reduce(merge_function)
   end
 end
 
