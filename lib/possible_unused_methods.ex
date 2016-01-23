@@ -12,8 +12,7 @@ defmodule PossibleUnusedMethods do
     |> with_only_one_occurrence
     |> without_classes
     |> gather_terms
-    |> Enum.join("\n")
-    |> IO.puts
+    |> print_list(header: "Possible unused methods")
   end
 
   defp generate_terms_with_occurrences(tags_list) do
@@ -25,5 +24,14 @@ defmodule PossibleUnusedMethods do
     terms_and_occurrences
     |> Map.keys
     |> Enum.sort
+  end
+
+  defp print_list(list, header: header) do
+    IO.puts "#{header}\n"
+
+    list
+    |> Enum.map(&("* #{&1}"))
+    |> Enum.join("\n")
+    |> IO.puts
   end
 end
