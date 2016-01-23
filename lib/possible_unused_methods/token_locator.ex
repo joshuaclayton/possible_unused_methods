@@ -49,7 +49,6 @@ defmodule PossibleUnusedMethods.TokenLocator do
   defp matches_to_map(matches) do
     matches
     |> Enum.reduce(%{}, fn(item, acc) ->
-      IO.puts item
       [line | count] = item |> String.split(":")
 
       put_in(acc, [line], count |> Enum.at(0) |> String.to_integer)
