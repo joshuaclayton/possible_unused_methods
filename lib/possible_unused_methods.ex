@@ -6,13 +6,17 @@ defmodule PossibleUnusedMethods do
   import PossibleUnusedMethods.FileAnalytics, only: [with_only_one_occurrence: 1, without_classes: 1]
 
   def main(_args) do
-    File.read!("#{File.cwd!}/.git/tags")
-    |> TagsParser.parse
+    parse_tags
     |> generate_terms_with_occurrences
     |> with_only_one_occurrence
     |> without_classes
     |> gather_terms
     |> print_list(header: "Possible unused methods")
+  end
+
+  defp parse_tags(tags_file \\ "#{File.cwd!}/.git/tags") do
+    File.read!(tags_file)
+    |> TagsParser.parse
   end
 
   defp generate_terms_with_occurrences(tags_list) do
